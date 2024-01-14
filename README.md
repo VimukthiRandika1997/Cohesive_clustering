@@ -6,10 +6,15 @@ Using approach in the paper [**The The Chosen One: Consistent Characters in Text
 
 *consistency refers to finding a shared representation across all the other given instances.*
 
-![Alt Most cohesive cluster ](./assets/cohesive_clustering.png){:.centered}
+<p align='center'>
+ <img src='./assets/cohesive_clustering.png'>
+</p>
 
 Mathematically, we can represent **cohesion** as below,
-![Alt cohesion](./assets/cohesion.png){:.centered}
+
+<p align='center'>
+ <img src='./assets/cohesion.png'>
+</p>
 
 *For the above image, the most cohesive cluster would be the cluster depicting black dots as its instances are more closer to its cluster centroid(higher consistency).*
 
