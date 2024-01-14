@@ -4,9 +4,12 @@ Clustering approach where the consistency is preserved.
 ## Concept
 Using approach in the paper [**The The Chosen One: Consistent Characters in Text-to-Image Diffusion Models** ](https://arxiv.org/abs/2311.10093), I augmented clustering approach to identify consistent image clusters for a given dataset.
 
-*consistency refers to finding a representation that same across all the other instances.*
+*consistency refers to finding a shared representation across all the other given instances.*
 
 ![Alt Most cohesive cluster ](./assets/cohesive_clustering.png)
+
+Mathematically, we can represent **cohesion** as below,
+![Alt cohesion](./assets/cohesion.png)
 
 *For the above image, the most cohesive cluster would be the cluster depicting black dots as its instances are more closer to its cluster centroid(higher consistency).*
 
