@@ -1,0 +1,7 @@
+numpy
+pandas
+matplotlib
+PIL
+sckit-learn
+torch
+torchaudio
