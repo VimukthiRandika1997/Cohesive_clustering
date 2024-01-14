@@ -8,6 +8,8 @@ Using approach in the paper [**The The Chosen One: Consistent Characters in Text
 
 ![Alt Most cohesive cluster ](./assets/cohesive_clustering.png)
 
+*For the above image, the most cohesive cluster would be the cluster depicting black dots as its instances are more closer to its cluster centroid(higher consistency).*
+
 If the clustering approach works well, we can find the optimal set clusters that each of them has unique set of patterns. Then we can find the most cohesive cluster, aka the cluster that shows the most consistency across all the instances(features are same and consistent).
 
 ## Installation

@@ -1,4 +1,4 @@
-data: ./data
-num_clusters: 3
-dim_c: 5
-vis: True
+data: ./data # directory to stored image data
+num_clusters: 3 # specify the no.of clusters to be detected
+dim_c: 5 # minimum instances of each clusters to be hold, clusters which are below threshold will be ignored
+vis: True # for tsne visualization map
