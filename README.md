@@ -39,6 +39,13 @@ python clustering.py
 
 ### Other
 - [ ] Top-k retrieval
+- [ ] Support for rotational invariance of the images([see below](#results))
+
+# Results
+- Overall results are fine, there are some edge cases that need to handle seperately.
+    - Some clusters might have mixed-images(probably due to either extracted features or clustering algorithm in used.)
+    - Sensitive to the rotation of the image, needs to be addressed (Make this as **Rotational Invariant Method**).
+- Enhance the feature extraction process: Incoporate more features that make them unique!
 
 ## Contributing
 
