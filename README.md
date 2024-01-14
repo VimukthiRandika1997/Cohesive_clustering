@@ -6,7 +6,7 @@ Using approach in the paper [**The The Chosen One: Consistent Characters in Text
 
 *consistency refers to finding a representation that same across all the other instances.*
 
-[Most cohesive cluster ](./assets/cohesive_clustering.png)
+![Alt Most cohesive cluster ](./assets/cohesive_clustering.png)
 
 If the clustering approach works well, we can find the optimal set clusters that each of them has unique set of patterns. Then we can find the most cohesive cluster, aka the cluster that shows the most consistency across all the instances(features are same and consistent).
 
