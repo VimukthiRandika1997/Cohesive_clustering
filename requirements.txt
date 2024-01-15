@@ -3,5 +3,6 @@ pandas
 matplotlib
 PIL
 sckit-learn
+umap
 torch
 torchaudio

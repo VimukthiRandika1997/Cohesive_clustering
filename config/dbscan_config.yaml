@@ -1,0 +1,4 @@
+data: ./data
+radius: 0.5
+dim_c: 5
+vis: True

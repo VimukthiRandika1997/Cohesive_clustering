@@ -1,1 +1,4 @@
-algo_name: 'kmeans++'
+# algo_name: 'kmeans++'
+algo_name: 'DBSCAN'
+
+data: ./data

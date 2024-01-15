@@ -11,8 +11,15 @@ from PIL import Image
 import torch
 import torchvision.transforms as transforms
 
+import umap
 from sklearn.manifold import TSNE
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, Birch, DBSCAN
+from sklearn.preprocessing import StandardScaler
+
+
+# Ignore warnings
+import warnings
+warnings.filterwarnings("ignore")
 
 
 ### Approach ###
@@ -128,6 +135,59 @@ def kmeans_clustering(no_of_clusters, dmin_c, data_points, images = None):
 
 
 
+def dbscan_clustering(data_points, radius, dmin_c, images = None):
+    """Apply DBSCAN clustering to the data"""
+
+    dbscan = DBSCAN(eps=radius, min_samples=dmin_c)
+
+    scaler = StandardScaler()
+    scaled_features = scaler.fit_transform(data_points)
+
+    # Applying umap
+    reducer = umap.UMAP()
+    embedding = reducer.fit_transform(scaled_features)
+
+    dbscan.fit(embedding)
+    labels = dbscan.labels_
+    for i, label in enumerate(labels): # In-place, rearrange labels: [-1, 0, 1, 2, 3] to [0, 1, 2, 3, 4], now cluster 0: noise for this case!
+        if label == -1:
+            labels[i] = 0
+        else:
+            labels[i] = label + 1
+
+    # Calculating centroids
+    # For more info refer to the dbscan.ipynb notebook..
+    cluster_centroids = []
+    for i, label in enumerate(np.unique(labels).tolist()):
+            centroid = np.mean(embedding[labels==label, :], axis=0) # taking the mean value as the cluster centroid
+            cluster_centroids.append(centroid)
+    cluster_centroids = np.array(cluster_centroids)
+
+    unique, counts = np.unique(labels, return_counts=True)
+    cluster_counts = dict(zip(unique, counts))
+    
+    # - filter out clusters where count dmin_c
+    selected_clusters = [cluster for cluster, count in cluster_counts.items() if count > dmin_c] 
+    selected_centers = cluster_centroids[selected_clusters]
+    selected_labels = []
+    
+    selected_labels = [label for label in labels if label in selected_clusters]
+    selected_labels = make_continuous(selected_labels)
+    selected_labels = np.array(selected_labels)
+    
+    selected_elements = np.array([data_points[i] for i, label in enumerate(labels) if label in selected_clusters])
+    scaled_features_selected = scaler.fit_transform(selected_elements)
+    selected_elements = reducer.fit_transform(scaled_features_selected)
+
+    if images:
+        selected_images = [images[i] for i, label in enumerate(labels) if label in selected_clusters]
+    else:
+        selected_images = None
+
+    return selected_centers, selected_labels, selected_elements, selected_images, len(np.unique(selected_labels).tolist())
+
+
+
 def make_continuous(lst):
     """Make the mapping
     
@@ -157,6 +217,7 @@ def find_cohesive_clusters(centers, elements, labels):
         cohesions[label_id] = sum(center_norms[labels == label_id]) / sum(labels == label_id)
     
     # find the most cohesive cluster, and save the corresponding sample
+    print(cohesions, unique_labels)
     min_cohesion_idx = np.argmin(cohesions)
 
     return unique_labels[min_cohesion_idx].item()
@@ -228,35 +289,53 @@ if __name__ == '__main__':
     # args = argument_parser()
     main_args = config_2_args('./config/main_config.yaml')
 
-    if main_args.algo_name == 'kmeans++':
-        args = config_2_args('./config/kmeans++_config.yaml') 
-
-    elif main_args.algo_name == 'DBSCAN':
-        raise NotImplementedError('Not implemented yet!!!')
-    else:
-        raise ValueError('Error in config yaml file!!!')
-
     # -load data
-    data_paths = load_data(args.data)
+    data_paths = load_data(main_args.data)
     # print(data_paths)
 
     # get the embeddings
     embeddings = get_embeddings(data_type='image', data_paths=data_paths)    
 
-    # -clustering
-    centers, labels, elements, images = kmeans_clustering(args.num_clusters, args.dim_c, embeddings)
-    # print(centers.shape, labels, elements.shape)
+    # Based on the algorithm, find the clusters...
+    if main_args.algo_name == 'kmeans++':
+        args = config_2_args('./config/kmeans++_config.yaml') 
+        # -clustering
+        centers, labels, elements, selected_images = kmeans_clustering(args.num_clusters, args.dim_c, embeddings, images=data_paths)
+        # print(centers.shape, labels, elements.shape)
+
+        # -visualize
+        if args.vis:
+            visualize_2D(main_args.algo_name, args.num_clusters, elements, labels)
+
+        # -find the most cohesive cluster
+        cohesive_cluster_id = find_cohesive_clusters(centers=centers, elements=elements, labels=labels)
+        print(cohesive_cluster_id)
+        print('Most cohesive clusters: ', cohesive_cluster_id) 
+
+        # create folders for each resulted cluster
+        df = create_dataframe(image_paths=selected_images, cluster_ids=labels)
+        make_clusters(df=df, algo='kmeans++', cohesive_cluster_ids=cohesive_cluster_id)
+
+    elif main_args.algo_name == 'DBSCAN':
+        args = config_2_args('./config/dbscan_config.yaml') 
+        # -clustering
+        centers, labels, elements, selected_images, num_clusters = dbscan_clustering(data_points=embeddings, radius=args.radius, dmin_c=args.dim_c, images=data_paths)
+        # print(centers.shape, labels, elements.shape)
+
+        # -visualize
+        if args.vis:
+            visualize_2D(main_args.algo_name, num_clusters, elements, labels)
+
+        # -find the most cohesive cluster
+        cohesive_cluster_id = find_cohesive_clusters(centers=centers, elements=elements, labels=labels)
+        print('Most cohesive clusters: ', cohesive_cluster_id) 
+
+        # create folders for each resulted cluster
+        df = create_dataframe(image_paths=selected_images, cluster_ids=labels)
+        make_clusters(df=df, algo='DBSCAN', cohesive_cluster_ids=cohesive_cluster_id)
+
+    else:
+        raise ValueError('Error in config yaml file!!!')
         
-    # -visualize
-    if args.vis:
-        visualize_2D(main_args.algo_name, args.num_clusters, elements, labels)
-
-    # -find the most cohesive cluster
-    cohesive_cluster_id = find_cohesive_clusters(centers=centers, elements=elements, labels=labels)
-    print('Most cohesive clusters: ', cohesive_cluster_id) 
-
-    # create folders for each resulted cluster
-    df = create_dataframe(image_paths=data_paths, cluster_ids=labels)
-    make_clusters(df=df, algo='kmeans++', cohesive_cluster_ids=cohesive_cluster_id)
 
 

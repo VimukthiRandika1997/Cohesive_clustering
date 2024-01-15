@@ -31,8 +31,9 @@ pip install -r requirements.txt
 ## Usage
 
 ```python
-# Edit the configs files
- - set the hyperparametes
+# Edit the config files
+ - edit main_config file
+ - set the hyperparametes in preferred algorithm
 
 # Run the script
 python clustering.py
@@ -41,7 +42,7 @@ python clustering.py
 ## TODO
 ### Clustering Algorithms
 - [x] Implemented kmeans++ 
-- [ ] Implemented DBSCAN
+- [x] Implemented DBSCAN
 - [ ] Implemented BIRCH
 - [ ] Testing with Graph Clustering
 
